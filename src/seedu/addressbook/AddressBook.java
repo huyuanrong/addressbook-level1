@@ -619,6 +619,10 @@ public class AddressBook {
      * Shows a message to the user
      */
     private static void showToUser(String... message) {
+        printMessage(message);
+    }
+
+    private static void printMessage(String... message) {
         for (String m : message) {
             System.out.println(LINE_PREFIX + m);
         }
