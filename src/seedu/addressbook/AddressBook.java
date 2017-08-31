@@ -22,6 +22,8 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /*
  * NOTE : =============================================================
@@ -90,6 +92,8 @@ public class AddressBook {
     private static final String MESSAGE_STORAGE_FILE_CREATED = "Created new empty storage file: %1$s";
     private static final String MESSAGE_WELCOME = "Welcome to your Address Book!";
     private static final String MESSAGE_USING_DEFAULT_FILE = "Using default storage file : " + DEFAULT_STORAGE_FILEPATH;
+    private static final String MESSAGE_INVALID_PERSON_PHONE_NUMBER = "The phone number provided is invalid.";
+    private static final String MESSAGE_INVALID_PERSON_EMAIL_ADDRESS = "The email address provided is invalid.";
 
     // These are the prefix strings to define the data type of a command parameter
     private static final String PERSON_DATA_PREFIX_PHONE = "p/";
@@ -159,6 +163,17 @@ public class AddressBook {
      * If the first non-whitespace character in a user's input line is this, that line will be ignored.
      */
     private static final char INPUT_COMMENT_MARKER = '#';
+
+    /**
+     * The number of digits of a phone number in Singapore.
+     */
+    private static final int PERSON_DATA_PHONE_DIGITS = 8;
+
+    /**
+     * The valid email address pattern.
+     */
+    private static final Pattern VALID_EMAIL_ADDRESS_REGEX =
+            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 
     /*
      * This variable is declared for the whole class (instead of declaring it
@@ -619,6 +634,7 @@ public class AddressBook {
      * Shows a message to the user
      */
     private static void showToUser(String... message) {
+
         printMessage(message);
     }
 
@@ -1062,6 +1078,11 @@ public class AddressBook {
      * @param phone to be validated
      */
     private static boolean isPersonPhoneValid(String phone) {
+
+        if ( phone.length()!= PERSON_DATA_PHONE_DIGITS ){
+            System.out.println(MESSAGE_INVALID_PERSON_PHONE_NUMBER);
+            return false;
+        }
         return phone.matches("\\d+");    // phone nonempty sequence of digits
         //TODO: implement a more permissive validation
     }
@@ -1073,7 +1094,13 @@ public class AddressBook {
      * @return whether arg is a valid person email
      */
     private static boolean isPersonEmailValid(String email) {
-        return email.matches("\\S+@\\S+\\.\\S+"); // email is [non-whitespace]@[non-whitespace].[non-whitespace]
+        Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(email);
+        if (!matcher.find()){
+            System.out.println(MESSAGE_INVALID_PERSON_EMAIL_ADDRESS);
+            return false;
+        }
+        return true;
+
         //TODO: implement a more permissive validation
     }
 
