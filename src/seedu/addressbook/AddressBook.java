@@ -115,6 +115,12 @@ public class AddressBook {
     private static final String COMMAND_FIND_PARAMETERS = "KEYWORD [MORE_KEYWORDS]";
     private static final String COMMAND_FIND_EXAMPLE = COMMAND_FIND_WORD + " alice bob charlie";
 
+    private static final String COMMAND_PHONE_WORD = "phone";
+    private static final String COMMAND_PHONE_DESC = "Finds all persons whose number contain any of the specified "
+                                        + "keywords and displays them as a list with index numbers.";
+    private static final String COMMAND_PHONE_PARAMETERS = "KEYWORD [PHONE NUMBER]";
+    private static final String COMMAND_PHONE_EXAMPLE = COMMAND_PHONE_WORD + " 9874";
+
     private static final String COMMAND_LIST_WORD = "list";
     private static final String COMMAND_LIST_DESC = "Displays all persons as a list with index numbers.";
     private static final String COMMAND_LIST_EXAMPLE = COMMAND_LIST_WORD;
@@ -388,6 +394,8 @@ public class AddressBook {
             return executeAddPerson(commandArgs);
         case COMMAND_FIND_WORD:
             return executeFindPersons(commandArgs);
+        case COMMAND_PHONE_WORD:
+            return executeFindPersonsByPhone(commandArgs);
         case COMMAND_LIST_WORD:
             return executeListAllPersonsInAddressBook();
         case COMMAND_DELETE_WORD:
@@ -472,6 +480,18 @@ public class AddressBook {
     }
 
     /**
+     * Finds and lists all persons in address book whose phone contains any of the argument keywords.
+     *
+     * @param commandArgs full command args string from the user
+     * @return feedback display message for the operation result
+     */
+    private static String executeFindPersonsByPhone(String commandArgs){
+        final Set<String> keywords = extractKeywordsFromFindPersonArgs(commandArgs);
+        final ArrayList<String[]> personsFound = getPersonsWithPhoneContainingAnyKeyword(keywords);
+        showToUser(personsFound);
+        return getMessageForPersonsDisplayedSummary(personsFound);
+    }
+    /**
      * Constructs a feedback message to summarise an operation that displayed a listing of persons.
      *
      * @param personsDisplayed used to generate summary
@@ -502,6 +522,23 @@ public class AddressBook {
         for (String[] person : getAllPersonsInAddressBook()) {
             final Set<String> wordsInName = new HashSet<>(splitByWhitespace(getNameFromPerson(person)));
             if (!Collections.disjoint(wordsInName, keywords)) {
+                matchedPersons.add(person);
+            }
+        }
+        return matchedPersons;
+    }
+
+    /**
+     * Retrieves all persons in the full model whose phone contain the specified keywords.
+     *
+     * @param keywords for searching
+     * @return list of persons in full model with phone containing some of the keywords
+     */
+    private static ArrayList<String[]> getPersonsWithPhoneContainingAnyKeyword (Collection<String> keywords){
+        final ArrayList<String[]> matchedPersons = new ArrayList<>();
+        for (String[] person : getAllPersonsInAddressBook()) {
+            final Set<String> numInPhone = new HashSet<>(splitByWhitespace(getPhoneFromPerson(person)));
+            if (!Collections.disjoint(numInPhone, keywords)) {
                 matchedPersons.add(person);
             }
         }
@@ -1115,6 +1152,7 @@ public class AddressBook {
     private static String getUsageInfoForAllCommands() {
         return getUsageInfoForAddCommand() + LS
                 + getUsageInfoForFindCommand() + LS
+                + getUsageInfoForPhoneCommand() + LS
                 + getUsageInfoForViewCommand() + LS
                 + getUsageInfoForDeleteCommand() + LS
                 + getUsageInfoForClearCommand() + LS
@@ -1134,6 +1172,13 @@ public class AddressBook {
         return String.format(MESSAGE_COMMAND_HELP, COMMAND_FIND_WORD, COMMAND_FIND_DESC) + LS
                 + String.format(MESSAGE_COMMAND_HELP_PARAMETERS, COMMAND_FIND_PARAMETERS) + LS
                 + String.format(MESSAGE_COMMAND_HELP_EXAMPLE, COMMAND_FIND_EXAMPLE) + LS;
+    }
+
+    /** Returns the string for showing 'phone' command usage instruction */
+    private static String getUsageInfoForPhoneCommand() {
+        return String.format(MESSAGE_COMMAND_HELP, COMMAND_PHONE_WORD, COMMAND_PHONE_DESC) + LS
+                + String.format(MESSAGE_COMMAND_HELP_PARAMETERS, COMMAND_PHONE_PARAMETERS) + LS
+                + String.format(MESSAGE_COMMAND_HELP_EXAMPLE, COMMAND_PHONE_EXAMPLE) + LS;
     }
 
     /** Returns the string for showing 'delete' command usage instruction */
